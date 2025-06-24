@@ -147,7 +147,7 @@ const board = (function gameBoard() {
   };
 })();
 
-const gameController = (function game() {
+const gameController = function game() {
   const players = [createPlayer("PlayerX", "X"), createPlayer("PlayerO", "O")];
   let gameIsRunning = true;
 
@@ -244,4 +244,4 @@ const gameController = (function game() {
 
     return true;
   }
-})();
+};

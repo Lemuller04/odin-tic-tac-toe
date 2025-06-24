@@ -5,3 +5,40 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+@font-face {
+    font-family: "Cabin Sketch";
+    src: url(fonts/Cabin_Sketch/CabinSketch-Regular.ttf);
+}
+
+body {
+    font-family: "Cabin Sketch";
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    background-color: #0a0a0a;
+    color: #fff;
+    height: 100vh;
+}
+
+header {
+    padding: 2rem 0;
+    font-size: 1.4rem;
+}
+
+main {
+    flex: 1;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    padding: 1.1rem 0;
+}
