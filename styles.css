@@ -15,7 +15,7 @@ body {
     font-family: "Cabin Sketch";
     display: flex;
     flex-direction: column;
-    text-align: center;
+    align-items: center;
     background-color: #0a0a0a;
     color: #fff;
     height: 100vh;
@@ -28,6 +28,25 @@ header {
 
 main {
     flex: 1;
+    display: grid;
+    place-content: center;
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* align-items: center; */
+}
+
+.board-container {
+    display: grid;
+    grid-template:
+        repeat(3, minmax(100px, 20vh)) /
+        repeat(3, minmax(100px, 20vh));
+    background-image: url("images/board.png");
+    background-size: cover;
+    /* scales image to cover the container */
+    background-position: center;
+    /* centers the image */
+    background-repeat: no-repeat;
+    /* avoids tiling */
 }
 
 a {
@@ -41,4 +60,8 @@ a:hover {
 
 footer {
     padding: 1.1rem 0;
+}
+
+.copy {
+    font-size: 1.8rem;
 }
