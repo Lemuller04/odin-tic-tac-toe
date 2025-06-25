@@ -1,152 +1,193 @@
-function createPlayer(name, mark) {
-  let points = 0;
+const player = function (name, mark) {
+  let score = 0;
 
-  function addOnePoint() {
-    points++;
+  function addPoint() {
+    score++;
   }
 
-  function getPoints() {
-    return points;
+  function getScore() {
+    return score;
+  }
+
+  function resetScore() {
+    score = 0;
   }
 
   return {
+    addPoint,
+    getScore,
+    resetScore,
     name,
     mark,
-    getPoints,
-    addOnePoint,
   };
-}
+};
 
-const displayController = (function displayController() {
-  function appendButtons(cells) {
-    let container = document.querySelector(".board-container");
-    for (let cell of cells) {
-      container.appendChild(cell);
-    }
-  }
+const formsController = (function () {
+  const form = document.querySelector("form");
+  let name1;
+  let name2;
 
-  function styleButton(button, mark) {
-    button.style.backgroundImage = `url('${mark}')`;
-    button.style.backgroundSize = "cover";
-    button.style.backgroundPosition = "center";
-    button.style.backgroundRepeat = "no-repeat";
-  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  const errorParagraph = document.querySelector(".error");
-  function clearError() {
-    errorParagraph.style.display = "none";
-  }
+    let formName1 = document.querySelector("input[name=playerx]").value;
+    let formName2 = document.querySelector("input[name=playero]").value;
 
-  function showCellOcupiedError() {
-    errorParagraph.style.display = "block";
-    errorParagraph.textContent = "This cell was already used, try another one!";
-  }
+    name1 = formName1.length > 1 ? formName1 : "Player X";
+    name2 = formName2.length > 1 ? formName2 : "Player O";
 
-  function printBoard(board) {
-    console.log(`  | 0 | 1 | 2`);
-    console.log(`0 | ${board[0][0]} | ${board[0][1]} | ${board[0][2]}`);
-    console.log(`0 | ${board[1][0]} | ${board[1][1]} | ${board[1][2]}`);
-    console.log(`0 | ${board[2][0]} | ${board[2][1]} | ${board[2][2]}`);
-  }
+    gameController.setPlayerName(0, name1);
+    gameController.setPlayerName(1, name2);
 
-  function showPlayerInput(name, mark, play) {
-    console.log(`${name} placed his ${mark} on ${play}`);
-  }
+    displayController.updateScores(gameController.getPlayers());
+    displayController.closeModal();
+    form.reset();
+  });
 
-  function alertWinner(name) {
-    alert(`${name} wins the game!`);
-  }
+  function setButtons() {
+    let changeNameButton = document.querySelector(".change-names");
+    changeNameButton.addEventListener("click", () => {
+      displayController.showModal();
+    });
 
-  function showTie() {
-    console.log("It is a tie!");
-  }
-
-  function showInvalidCoordinatesError() {
-    console.log("Invalid board position.");
-  }
-
-  function showInvalidInputError() {
-    console.log(
-      `Your input was invalid, follow the pattern: row, column (ie. 1, 1).`,
-    );
-  }
-
-  function showPoints(players) {
-    console.log(
-      `${players[0].name} has ${players[0].getPoints()} points\n${players[1].name} has ${players[1].getPoints()} points`,
-    );
-  }
-
-  return {
-    appendButtons,
-    styleButton,
-    clearError,
-    printBoard,
-    showPlayerInput,
-    alertWinner,
-    showTie,
-    showCellOcupiedError,
-    showInvalidCoordinatesError,
-    showInvalidInputError,
-    showPoints,
-  };
-})();
-
-const board = (function gameBoard() {
-  const cells = createCells();
-  const marks = ["images/x-marker.png", "images/o-marker.png"];
-  let emptySpaces = 9;
-  let markIsX = true;
-
-  function createCells() {
-    let cells = [];
-    for (let i = 0; i < 9; i++) {
-      const button = document.createElement("button");
-      button.classList.add("board-cell");
-      button.id = `${i}`;
-      setOnClick(button);
-      cells.push(button);
-      displayController.appendButtons(cells);
-    }
-    return cells;
-  }
-
-  function setOnClick(button) {
-    button.addEventListener("click", (e) => {
-      if (button.hasAttribute("data-filled")) {
-        displayController.showCellOcupiedError();
-        return;
-      }
-
-      displayController.clearError();
-      updateBoard(button);
+    let resetScoresButton = document.querySelector(".reset-scores");
+    resetScoresButton.addEventListener("click", () => {
+      gameController.resetScores();
     });
   }
 
-  function updateBoard(button) {
-    let [markUrl, mark] = markIsX ? [marks[0], "x"] : [marks[1], "o"];
-    button.setAttribute("data-filled", "filled");
-    button.setAttribute("data-mark", mark);
-    displayController.styleButton(button, markUrl);
-    markIsX = !markIsX;
-    emptySpaces--;
+  setButtons();
+
+  return {
+    name1,
+    name2,
+  };
+})();
+
+const displayController = (function display() {
+  const board = document.querySelector(".board-container");
+  const modal = document.querySelector("[data-modal]");
+
+  function displayBoard(cells) {
+    for (let cell of cells) {
+      board.appendChild(cell);
+    }
   }
 
+  function showModal() {
+    modal.showModal();
+  }
+
+  function closeModal() {
+    modal.close();
+  }
+
+  function clearBoard() {
+    clearContainer(board);
+  }
+
+  function clearContainer(container) {
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+  }
+
+  function updateCell(cell, mark) {
+    cell.style.backgroundImage = `url(images/${mark}-marker.png)`;
+    cell.style.backgroundSize = "cover";
+    cell.style.backgroundPosition = "center";
+    cell.style.backgroundRepeat = "no-repeat";
+  }
+
+  function getErrorParagraph() {
+    return document.querySelector(".error");
+  }
+
+  function showCellFilledError() {
+    const p = getErrorParagraph();
+    p.textContent = "This cell is already filled, try another one!";
+    p.style.display = "block";
+  }
+
+  function hideErrorParagraph() {
+    getErrorParagraph().style.display = "none";
+  }
+
+  function updateScores(players) {
+    const scores = document.querySelector(".scores-container");
+    clearContainer(scores);
+    let ps = scoresParagraphs(players);
+    for (let p of ps) {
+      scores.appendChild(p);
+    }
+  }
+
+  function scoresParagraphs(players) {
+    let ps = [];
+
+    for (let player of players) {
+      const p = document.createElement("p");
+      p.textContent = `${player.name} - ${player.getScore()}`;
+      ps.push(p);
+    }
+
+    return ps;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    modal.showModal();
+  });
+
+  return {
+    displayBoard,
+    updateCell,
+    showCellFilledError,
+    hideErrorParagraph,
+    clearBoard,
+    updateScores,
+    showModal,
+    closeModal,
+  };
+})();
+
+const boardController = (function board() {
+  let cells = [];
+  let emptySpaces = 9;
+
   function resetBoard() {
-    board = [
-      [" ", " ", " "],
-      [" ", " ", " "],
-      [" ", " ", " "],
-    ];
+    cells = [];
+    displayController.clearBoard();
+    createCells();
+    displayController.displayBoard(cells);
     emptySpaces = 9;
+  }
+
+  function createCells() {
+    for (let i = 0; i < 9; i++) {
+      let cell = createCell(i);
+      cells.push(cell);
+    }
+  }
+
+  function createCell(cellId) {
+    let button = document.createElement("button");
+    button.id = cellId;
+    button.classList.add("board-cell");
+    return button;
+  }
+
+  function fillCell(cell, mark) {
+    emptySpaces--;
+    cell.setAttribute("data-filled", "filled");
+    cell.setAttribute("data-marker", mark);
+  }
+
+  function isFilled(cell) {
+    return cell.hasAttribute("data-filled");
   }
 
   function getCells() {
     return cells;
-  }
-
-  function getCell(coordinates) {
-    return board[coordinates];
   }
 
   function getEmptySpaces() {
@@ -168,125 +209,127 @@ const board = (function gameBoard() {
   }
 
   function getCrosses() {
-    let cross1 = [cells[0], cells[4], cells[8]];
-    let cross2 = [cells[2], cells[4], cells[6]];
+    cross1 = [cells[0], cells[4], cells[8]];
+    cross2 = [cells[2], cells[4], cells[6]];
     return [cross1, cross2];
   }
 
+  createCells();
+  displayController.displayBoard(cells);
+
   return {
     getCells,
-    updateBoard,
-    resetBoard,
+    isFilled,
     getEmptySpaces,
-    getCell,
+    fillCell,
     getLines,
     getColumns,
     getCrosses,
+    resetBoard,
   };
 })();
 
-const gameController = (function game() {
-  const players = [createPlayer("PlayerX", "X"), createPlayer("PlayerO", "O")];
-  let gameIsRunning = true;
-  const cells = board.getCell;
+const gameController = (function () {
+  const players = [player("Player X", "x"), player("Player O", "o")];
+  displayController.updateScores(players);
+  let cells = boardController.getCells();
+  let currentMarker = "x";
+  let currentMarkerIsX = true;
 
-  while (gameIsRunning) {
-    let roundIsRunning = true;
-    let winner;
+  function game() {
+    displayController.updateScores(players);
+    for (let cell of cells) {
+      cell.addEventListener("click", () => {
+        if (boardController.isFilled(cell)) {
+          displayController.showCellFilledError();
+          return;
+        }
+        displayController.hideErrorParagraph();
 
-    for (let player of players) {
-      let play = getPlayerInput(player);
-      displayController.showPlayerInput(player.name, player.mark, play);
-      board.updateBoard(play, player.mark);
-      displayController.printBoard(board.getBoard());
+        let mark = currentMarkerIsX ? "x" : "o";
+        currentMarkerIsX = !currentMarkerIsX;
 
-      if ((winner = getWinner(player.mark, player.name))) {
-        roundIsRunning = false;
-        displayController.alertWinner(player.name);
-        player.addOnePoint();
-        break;
-      }
+        boardController.fillCell(cell, mark);
+        displayController.updateCell(cell, mark);
 
-      if (board.getEmptySpaces() == 0) {
-        roundIsRunning = false;
-        displayController.showTie();
-        break;
-      }
-    }
+        if (checkWinner(mark)) {
+          let winner = mark === "x" ? 0 : 1;
+          players[winner].addPoint();
+          resetGame();
+        }
 
-    if (!roundIsRunning) {
-      board.resetBoard();
-      let roundWinner = players.find((player) => player.name === winner);
-      displayController.showPoints(players);
-      displayController.printBoard(board.getBoard());
-      roundIsRunning = true;
+        if (checkTie()) {
+          resetGame();
+        }
+      });
     }
   }
 
-  function getWinner(mark, name) {
-    for (let line of board.getLines()) {
-      if (line.every((val) => val === mark)) {
-        return name;
+  function resetGame() {
+    boardController.resetBoard();
+    cells = boardController.getCells();
+    currentMarker = "x";
+    currentMarkerIsX = true;
+    game();
+  }
+
+  function checkWinner(mark) {
+    for (let line of boardController.getLines()) {
+      if (checkArray(line, mark)) {
+        return mark;
       }
     }
 
-    for (let column of board.getColumns()) {
-      if (column.every((val) => val === mark)) {
-        return name;
+    for (let column of boardController.getColumns()) {
+      if (checkArray(column, mark)) {
+        return mark;
       }
     }
 
-    for (let cross of board.getCrosses()) {
-      if (cross.every((val) => val === mark)) {
-        return name;
+    for (let cross of boardController.getCrosses()) {
+      if (checkArray(cross, mark)) {
+        return mark;
       }
     }
 
     return null;
   }
 
-  function getPlayerInput(player) {
-    let moveIsInvalid = true;
-    let input;
-    let cells = board.getCells();
-
-    while (moveIsInvalid) {
-      for (let cell of cells) {
-        cell.addEventListener("click", getCellId);
-      }
-
-      // if (isValid(input)) {
-      //   moveIsInvalid = false;
-      //   break;
-      // }
-
-      for (let cell of cells) {
-        cell.removeEventListener("click", getCellId);
-      }
+  function checkArray(array, mark) {
+    let markers = [];
+    for (cell of array) {
+      markers.push(cell.dataset.marker);
     }
 
-    return [input[0], input[input.length - 1]];
+    if (markers.every((val) => val === mark)) {
+      return mark;
+    }
   }
 
-  function getCellId(cell) {
-    console.log(cell.id);
+  function checkTie() {
+    return boardController.getEmptySpaces() === 0;
   }
 
-  // function isValid(input) {
-  //   const regex = /^[0-2], ?[0-2]$/;
-  //
-  //   if (!input.match(regex)) {
-  //     displayController.showInvalidInputError();
-  //     return false;
-  //   }
-  //
-  //   let coordinates = [input[0], input[input.length - 1]];
-  //
-  //   if (!(board.getCell(coordinates) === " ")) {
-  //     displayController.showCellOcupiedError();
-  //     return false;
-  //   }
-  //
-  //   return true;
-  // }
+  function resetScores() {
+    for (let player of players) {
+      player.resetScore();
+    }
+    displayController.updateScores(players);
+  }
+
+  function setPlayerName(index, name) {
+    players[index].name = name;
+  }
+
+  function getPlayers() {
+    return players;
+  }
+
+  game();
+
+  return {
+    resetScores,
+    setPlayerName,
+    getPlayers,
+  };
 })();
