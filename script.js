@@ -18,15 +18,35 @@ function createPlayer(name, mark) {
 }
 
 const displayController = (function displayController() {
+  function appendButtons(cells) {
+    let container = document.querySelector(".board-container");
+    for (let cell of cells) {
+      container.appendChild(cell);
+    }
+  }
+
+  function styleButton(button, mark) {
+    button.style.backgroundImage = `url('${mark}')`;
+    button.style.backgroundSize = "cover";
+    button.style.backgroundPosition = "center";
+    button.style.backgroundRepeat = "no-repeat";
+  }
+
+  const errorParagraph = document.querySelector(".error");
+  function clearError() {
+    errorParagraph.style.display = "none";
+  }
+
+  function showCellOcupiedError() {
+    errorParagraph.style.display = "block";
+    errorParagraph.textContent = "This cell was already used, try another one!";
+  }
+
   function printBoard(board) {
     console.log(`  | 0 | 1 | 2`);
     console.log(`0 | ${board[0][0]} | ${board[0][1]} | ${board[0][2]}`);
     console.log(`0 | ${board[1][0]} | ${board[1][1]} | ${board[1][2]}`);
     console.log(`0 | ${board[2][0]} | ${board[2][1]} | ${board[2][2]}`);
-  }
-
-  function showLineSeparator() {
-    console.log("**************************");
   }
 
   function showPlayerInput(name, mark, play) {
@@ -39,10 +59,6 @@ const displayController = (function displayController() {
 
   function showTie() {
     console.log("It is a tie!");
-  }
-
-  function showCellOcupiedError() {
-    console.log("This cell is alread ocupied, try another one.");
   }
 
   function showInvalidCoordinatesError() {
@@ -62,8 +78,10 @@ const displayController = (function displayController() {
   }
 
   return {
+    appendButtons,
+    styleButton,
+    clearError,
     printBoard,
-    showLineSeparator,
     showPlayerInput,
     alertWinner,
     showTie,
@@ -75,25 +93,42 @@ const displayController = (function displayController() {
 })();
 
 const board = (function gameBoard() {
-  let board = [
-    [" ", " ", " "],
-    [" ", " ", " "],
-    [" ", " ", " "],
-  ];
+  const cells = createCells();
+  const marks = ["images/x-marker.png", "images/o-marker.png"];
   let emptySpaces = 9;
+  let markIsX = true;
 
-  function updateBoard(coordinates, mark) {
-    if (
-      coordinates[0] < 0 ||
-      coordinates[0] > 2 ||
-      coordinates[1] < 0 ||
-      coordinates[1] > 2
-    ) {
-      displayController.showInvalidCoordinatesError();
-      return;
+  function createCells() {
+    let cells = [];
+    for (let i = 0; i < 9; i++) {
+      const button = document.createElement("button");
+      button.classList.add("board-cell");
+      button.id = `${i}`;
+      setOnClick(button);
+      cells.push(button);
+      displayController.appendButtons(cells);
     }
+    return cells;
+  }
 
-    board[coordinates[0]][coordinates[1]] = mark;
+  function setOnClick(button) {
+    button.addEventListener("click", (e) => {
+      if (button.hasAttribute("data-filled")) {
+        displayController.showCellOcupiedError();
+        return;
+      }
+
+      displayController.clearError();
+      updateBoard(button);
+    });
+  }
+
+  function updateBoard(button) {
+    let [markUrl, mark] = markIsX ? [marks[0], "x"] : [marks[1], "o"];
+    button.setAttribute("data-filled", "filled");
+    button.setAttribute("data-mark", mark);
+    displayController.styleButton(button, markUrl);
+    markIsX = !markIsX;
     emptySpaces--;
   }
 
@@ -106,12 +141,12 @@ const board = (function gameBoard() {
     emptySpaces = 9;
   }
 
-  function getBoard() {
-    return board;
+  function getCells() {
+    return cells;
   }
 
   function getCell(coordinates) {
-    return board[coordinates[0]][coordinates[1]];
+    return board[coordinates];
   }
 
   function getEmptySpaces() {
@@ -119,24 +154,27 @@ const board = (function gameBoard() {
   }
 
   function getLines() {
-    return [board[0], board[1], board[2]];
+    const line1 = [cells[0], cells[1], cells[2]];
+    const line2 = [cells[3], cells[4], cells[5]];
+    const line3 = [cells[6], cells[7], cells[8]];
+    return [line1, line2, line3];
   }
 
   function getColumns() {
-    let column1 = [board[0][0], board[1][0], board[2][0]];
-    let column2 = [board[0][1], board[1][1], board[2][1]];
-    let column3 = [board[0][2], board[1][2], board[2][2]];
+    const column1 = [cells[0], cells[3], cells[6]];
+    const column2 = [cells[1], cells[4], cells[7]];
+    const column3 = [cells[2], cells[5], cells[8]];
     return [column1, column2, column3];
   }
 
   function getCrosses() {
-    let cross1 = [board[0][0], board[1][1], board[2][2]];
-    let cross2 = [board[0][2], board[1][1], board[2][0]];
+    let cross1 = [cells[0], cells[4], cells[8]];
+    let cross2 = [cells[2], cells[4], cells[6]];
     return [cross1, cross2];
   }
 
   return {
-    getBoard,
+    getCells,
     updateBoard,
     resetBoard,
     getEmptySpaces,
@@ -147,18 +185,16 @@ const board = (function gameBoard() {
   };
 })();
 
-const gameController = function game() {
+const gameController = (function game() {
   const players = [createPlayer("PlayerX", "X"), createPlayer("PlayerO", "O")];
   let gameIsRunning = true;
-
-  displayController.printBoard(board.getBoard());
+  const cells = board.getCell;
 
   while (gameIsRunning) {
     let roundIsRunning = true;
     let winner;
 
     for (let player of players) {
-      displayController.showLineSeparator();
       let play = getPlayerInput(player);
       displayController.showPlayerInput(player.name, player.mark, play);
       board.updateBoard(play, player.mark);
@@ -212,36 +248,45 @@ const gameController = function game() {
   function getPlayerInput(player) {
     let moveIsInvalid = true;
     let input;
+    let cells = board.getCells();
 
     while (moveIsInvalid) {
-      input = prompt(
-        `${player.name}, where would you like to place your ${player.mark}? (ex: 1, 1)`,
-      );
+      for (let cell of cells) {
+        cell.addEventListener("click", getCellId);
+      }
 
-      if (isValid(input)) {
-        moveIsInvalid = false;
-        break;
+      // if (isValid(input)) {
+      //   moveIsInvalid = false;
+      //   break;
+      // }
+
+      for (let cell of cells) {
+        cell.removeEventListener("click", getCellId);
       }
     }
 
     return [input[0], input[input.length - 1]];
   }
 
-  function isValid(input) {
-    const regex = /^[0-2], ?[0-2]$/;
-
-    if (!input.match(regex)) {
-      displayController.showInvalidInputError();
-      return false;
-    }
-
-    let coordinates = [input[0], input[input.length - 1]];
-
-    if (!(board.getCell(coordinates) === " ")) {
-      displayController.showCellOcupiedError();
-      return false;
-    }
-
-    return true;
+  function getCellId(cell) {
+    console.log(cell.id);
   }
-};
+
+  // function isValid(input) {
+  //   const regex = /^[0-2], ?[0-2]$/;
+  //
+  //   if (!input.match(regex)) {
+  //     displayController.showInvalidInputError();
+  //     return false;
+  //   }
+  //
+  //   let coordinates = [input[0], input[input.length - 1]];
+  //
+  //   if (!(board.getCell(coordinates) === " ")) {
+  //     displayController.showCellOcupiedError();
+  //     return false;
+  //   }
+  //
+  //   return true;
+  // }
+})();

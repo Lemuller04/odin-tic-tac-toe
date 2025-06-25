@@ -29,10 +29,9 @@ header {
 main {
     flex: 1;
     display: grid;
-    place-content: center;
-    /* display: flex; */
-    /* flex-direction: column; */
-    /* align-items: center; */
+    justify-content: center;
+    align-content: start;
+    margin-top: 5vh;
 }
 
 .board-container {
@@ -42,11 +41,22 @@ main {
         repeat(3, minmax(100px, 20vh));
     background-image: url("images/board.png");
     background-size: cover;
-    /* scales image to cover the container */
     background-position: center;
-    /* centers the image */
     background-repeat: no-repeat;
-    /* avoids tiling */
+}
+
+.board-cell {
+    background-color: transparent;
+    margin: 20px;
+    border: none;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+.board-cell:active {
+    border: none;
 }
 
 a {
@@ -64,4 +74,44 @@ footer {
 
 .copy {
     font-size: 1.8rem;
+}
+
+.error {
+    display: none;
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.game-header {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template: auto / 1fr 1fr;
+    gap: 20%;
+}
+
+.control-buttons {
+    display: grid;
+    justify-content: start;
+}
+
+.scores-container {
+    display: grid;
+    justify-content: end;
+}
+
+.control-buttons button {
+    width: 100%;
+    color: #fff;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fff;
+    padding: 5px 20px;
+    font-size: 1rem;
+}
+
+button {
+    font: inherit;
 }
