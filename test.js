@@ -9,21 +9,77 @@ const player = function (name, mark) {
     return score;
   }
 
+  function resetScore() {
+    score = 0;
+  }
+
   return {
     addPoint,
     getScore,
+    resetScore,
     name,
     mark,
   };
 };
 
+const formsController = (function () {
+  const form = document.querySelector("form");
+  let name1;
+  let name2;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    let formName1 = document.querySelector("input[name=playerx]").value;
+    let formName2 = document.querySelector("input[name=playero]").value;
+
+    name1 = formName1.length > 1 ? formName1 : "Player X";
+    name2 = formName2.length > 1 ? formName2 : "Player O";
+
+    gameController.setPlayerName(0, name1);
+    gameController.setPlayerName(1, name2);
+
+    displayController.updateScores(gameController.getPlayers());
+    displayController.closeModal();
+    form.reset();
+  });
+
+  function setButtons() {
+    let changeNameButton = document.querySelector(".change-names");
+    changeNameButton.addEventListener("click", () => {
+      displayController.showModal();
+    });
+
+    let resetScoresButton = document.querySelector(".reset-scores");
+    resetScoresButton.addEventListener("click", () => {
+      gameController.resetScores();
+    });
+  }
+
+  setButtons();
+
+  return {
+    name1,
+    name2,
+  };
+})();
+
 const displayController = (function display() {
   const board = document.querySelector(".board-container");
+  const modal = document.querySelector("[data-modal]");
 
   function displayBoard(cells) {
     for (let cell of cells) {
       board.appendChild(cell);
     }
+  }
+
+  function showModal() {
+    modal.showModal();
+  }
+
+  function closeModal() {
+    modal.close();
   }
 
   function clearBoard() {
@@ -71,12 +127,16 @@ const displayController = (function display() {
 
     for (let player of players) {
       const p = document.createElement("p");
-      p.textContent = `${player.name} has ${player.getScore()} points`;
+      p.textContent = `${player.name} - ${player.getScore()}`;
       ps.push(p);
     }
 
     return ps;
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    modal.showModal();
+  });
 
   return {
     displayBoard,
@@ -85,6 +145,8 @@ const displayController = (function display() {
     hideErrorParagraph,
     clearBoard,
     updateScores,
+    showModal,
+    closeModal,
   };
 })();
 
@@ -168,7 +230,8 @@ const boardController = (function board() {
 })();
 
 const gameController = (function () {
-  const players = [player("Name", "x"), player("Nome", "o")];
+  const players = [player("Player X", "x"), player("Player O", "o")];
+  displayController.updateScores(players);
   let cells = boardController.getCells();
   let currentMarker = "x";
   let currentMarkerIsX = true;
@@ -247,5 +310,26 @@ const gameController = (function () {
     return boardController.getEmptySpaces() === 0;
   }
 
+  function resetScores() {
+    for (let player of players) {
+      player.resetScore();
+    }
+    displayController.updateScores(players);
+  }
+
+  function setPlayerName(index, name) {
+    players[index].name = name;
+  }
+
+  function getPlayers() {
+    return players;
+  }
+
   game();
+
+  return {
+    resetScores,
+    setPlayerName,
+    getPlayers,
+  };
 })();

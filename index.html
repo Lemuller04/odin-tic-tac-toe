@@ -18,8 +18,8 @@
             <div class="scores-container">
             </div>
             <div class="control-buttons">
-                <p><button>Reset scores</button></p>
-                <p><button>Change names</button></p>
+                <p><button class="reset-scores">Reset scores</button></p>
+                <p><button class="change-names" data-open-modal>Change names</button></p>
             </div>
         </div>
         <div class="board-container">
@@ -34,6 +34,24 @@
             href="https://www.theodinproject.com/lessons/node-path-javascript-tic-tac-toe" rel="noopener noreferrer">Tic
             Tac Toe</a> project.
     </footer>
+
+    <dialog data-modal>
+        <form action="" method="post">
+            <p>
+                <label for="playerx">Player 1:</label>
+                <input type="text" id="playerx" name="playerx" placeholder="Player X">
+            </p>
+            <p>
+                <label for="playero">Player 2:</label>
+                <input type="text" id="playero" name="playero" placeholder="Player O">
+            </p>
+            <p class="dialog-footer">
+                Leave blank for defaults
+                <button type="submit">Start</button>
+            </p>
+        </form>
+    </dialog>
+
     <script src="test.js"></script>
 </body>
 
