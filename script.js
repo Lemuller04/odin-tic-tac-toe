@@ -209,8 +209,8 @@ const boardController = (function board() {
   }
 
   function getCrosses() {
-    cross1 = [cells[0], cells[4], cells[8]];
-    cross2 = [cells[2], cells[4], cells[6]];
+    const cross1 = [cells[0], cells[4], cells[8]];
+    const cross2 = [cells[2], cells[4], cells[6]];
     return [cross1, cross2];
   }
 
@@ -297,7 +297,7 @@ const gameController = (function () {
 
   function checkArray(array, mark) {
     let markers = [];
-    for (cell of array) {
+    for (let cell of array) {
       markers.push(cell.dataset.marker);
     }
 
