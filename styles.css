@@ -9,6 +9,7 @@
 @font-face {
     font-family: "Cabin Sketch";
     src: url(fonts/Cabin_Sketch/CabinSketch-Regular.ttf);
+    font-display: swap;
 }
 
 body {
@@ -53,6 +54,8 @@ main {
 
 button:hover {
     cursor: pointer;
+    background-color: rgb(100 100 100 / .2);
+    border-radius: 10%;
 }
 
 .board-cell:active {
