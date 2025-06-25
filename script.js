@@ -255,11 +255,11 @@ const gameController = (function () {
         if (checkWinner(mark)) {
           let winner = mark === "x" ? 0 : 1;
           players[winner].addPoint();
-          resetGame();
+          setTimeout(resetGame, 1000);
         }
 
         if (checkTie()) {
-          resetGame();
+          setTimeout(resetGame, 1000);
         }
       });
     }
