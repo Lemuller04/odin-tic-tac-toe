@@ -239,29 +239,32 @@ const gameController = (function () {
   function game() {
     displayController.updateScores(players);
     for (let cell of cells) {
-      cell.addEventListener("click", () => {
-        if (boardController.isFilled(cell)) {
-          displayController.showCellFilledError();
-          return;
-        }
-        displayController.hideErrorParagraph();
+      cell.addEventListener("click", onClick);
+    }
+  }
 
-        let mark = currentMarkerIsX ? "x" : "o";
-        currentMarkerIsX = !currentMarkerIsX;
+  function onClick(e) {
+    let cell = e.target;
+    if (boardController.isFilled(cell)) {
+      displayController.showCellFilledError();
+      return;
+    }
+    displayController.hideErrorParagraph();
 
-        boardController.fillCell(cell, mark);
-        displayController.updateCell(cell, mark);
+    let mark = currentMarkerIsX ? "x" : "o";
+    currentMarkerIsX = !currentMarkerIsX;
 
-        if (checkWinner(mark)) {
-          let winner = mark === "x" ? 0 : 1;
-          players[winner].addPoint();
-          setTimeout(resetGame, 1000);
-        }
+    boardController.fillCell(cell, mark);
+    displayController.updateCell(cell, mark);
 
-        if (checkTie()) {
-          setTimeout(resetGame, 1000);
-        }
-      });
+    if (checkWinner(mark)) {
+      let winner = mark === "x" ? 0 : 1;
+      players[winner].addPoint();
+      setTimeout(resetGame, 1000);
+    }
+
+    if (checkTie()) {
+      setTimeout(resetGame, 1000);
     }
   }
 
