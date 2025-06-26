@@ -235,6 +235,7 @@ const gameController = (function () {
   let cells = boardController.getCells();
   let currentMarker = "x";
   let currentMarkerIsX = true;
+  let pause = false;
 
   function game() {
     displayController.updateScores(players);
@@ -244,11 +245,16 @@ const gameController = (function () {
   }
 
   function onClick(e) {
+    if (pause) {
+      return;
+    }
+
     let cell = e.target;
     if (boardController.isFilled(cell)) {
       displayController.showCellFilledError();
       return;
     }
+
     displayController.hideErrorParagraph();
 
     let mark = currentMarkerIsX ? "x" : "o";
@@ -260,10 +266,12 @@ const gameController = (function () {
     if (checkWinner(mark)) {
       let winner = mark === "x" ? 0 : 1;
       players[winner].addPoint();
+      pause = true;
       setTimeout(resetGame, 1000);
     }
 
     if (checkTie()) {
+      pause = true;
       setTimeout(resetGame, 1000);
     }
   }
@@ -274,6 +282,8 @@ const gameController = (function () {
     currentMarker = "x";
     currentMarkerIsX = true;
     game();
+    pause = false;
+    console.log("unpause");
   }
 
   function checkWinner(mark) {
