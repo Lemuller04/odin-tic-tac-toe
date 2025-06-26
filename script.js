@@ -74,6 +74,20 @@ const displayController = (function display() {
     }
   }
 
+  function clearBackgroundImage() {
+    board.style.backgroundImage = `url(images/board.png)`;
+    board.style.backgroundSize = "cover";
+    board.style.backgroundPosition = "center";
+    board.style.backgroundRepeat = "no-repeat";
+  }
+
+  function drawWinner(direction, number) {
+    board.style.backgroundImage = `url(images/${direction}-${number}.png)`;
+    board.style.backgroundSize = "cover";
+    board.style.backgroundPosition = "center";
+    board.style.backgroundRepeat = "no-repeat";
+  }
+
   function showModal() {
     modal.showModal();
   }
@@ -147,6 +161,8 @@ const displayController = (function display() {
     updateScores,
     showModal,
     closeModal,
+    drawWinner,
+    clearBackgroundImage,
   };
 })();
 
@@ -267,12 +283,12 @@ const gameController = (function () {
       let winner = mark === "x" ? 0 : 1;
       players[winner].addPoint();
       pause = true;
-      setTimeout(resetGame, 1000);
+      setTimeout(resetGame, 1300);
     }
 
     if (checkTie()) {
       pause = true;
-      setTimeout(resetGame, 1000);
+      setTimeout(resetGame, 1300);
     }
   }
 
@@ -283,26 +299,35 @@ const gameController = (function () {
     currentMarkerIsX = true;
     game();
     pause = false;
-    console.log("unpause");
+    displayController.clearBackgroundImage();
   }
 
   function checkWinner(mark) {
+    let lineNumber = 0;
     for (let line of boardController.getLines()) {
       if (checkArray(line, mark)) {
+        displayController.drawWinner("line", lineNumber);
         return mark;
       }
+      lineNumber++;
     }
 
+    let columnNumber = 0;
     for (let column of boardController.getColumns()) {
       if (checkArray(column, mark)) {
+        displayController.drawWinner("column", columnNumber);
         return mark;
       }
+      columnNumber++;
     }
 
+    let crossNumber = 0;
     for (let cross of boardController.getCrosses()) {
       if (checkArray(cross, mark)) {
+        displayController.drawWinner("cross", crossNumber);
         return mark;
       }
+      crossNumber++;
     }
 
     return null;
